@@ -1,0 +1,12 @@
+# Output files
+*.log
+*.txt
+output/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# PowerShell
+*.ps1xml
