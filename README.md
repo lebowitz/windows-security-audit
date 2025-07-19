@@ -20,6 +20,66 @@ This repository contains PowerShell scripts that check for common signs of compr
 
 # Run comprehensive audit (requires admin privileges)
 .\comprehensive_audit.ps1
+
+# View help and available parameters
+.\quick_security_check.ps1 -Help
+.\comprehensive_audit.ps1 -Help
+```
+
+## 🤖 AI-Powered Analysis with Claude Code
+
+Both scripts now feature automatic AI analysis when [Claude Code](https://claude.ai/code) is installed on your system (either in Windows or WSL). After completing the security scan, Claude analyzes the results and provides:
+
+- **Risk Assessment**: Critical/High/Medium/Low rating
+- **Security Summary**: Concise overview of findings
+- **Top Concerns**: Prioritized list of security issues
+- **Recommended Actions**: Immediate steps to take
+- **Pattern Detection**: Identifies trends and anomalies
+
+### Example Claude Analysis Output
+
+```
+[2025-07-19 10:46:38] [Warning] === CLAUDE SECURITY ANALYSIS ===
+## Security Analysis Summary
+**Brief Summary:** The audit detected 3 failed login attempts, extensive PowerShell 
+scriptblock logging activity (false positive), and multiple kernel driver installations 
+from MSI Center and AMD software. No RDP connections or suspicious process creation 
+were found.
+**Risk Assessment:** **LOW-MEDIUM**
+
+## Top Security Concerns
+1. **Failed Login Attempts** - 3 failed login attempts detected with failure reason 
+   %%2313 (unknown username or bad password)
+2. **Kernel Driver Installations** - Multiple kernel-mode drivers installed by MSI 
+   Center and AMD Tools, which have low-level system access
+3. **Repetitive Service Installations** - Same drivers being installed multiple times 
+   on different dates (July 12, 14, 18)
+
+## Recommended Immediate Actions
+1. **Investigate Failed Logins:** Check if these were legitimate login attempts or 
+   potential unauthorized access attempts
+2. **Verify MSI Center/AMD Drivers:** Confirm these are legitimate installations 
+   from your hardware management software
+3. **PowerShell Logging:** The extensive PowerShell alerts appear to be false 
+   positives from legitimate NetAdapter module loading - consider tuning detection rules
+
+## Patterns Detected
+- **False Positive Pattern:** All PowerShell alerts are from legitimate Windows 
+  NetAdapter module scriptblock creation
+- **Service Pattern:** MSI Center appears to be reinstalling the same drivers 
+  repeatedly, suggesting possible software issues or updates
+- No actual malicious activity detected - all findings appear to be legitimate 
+  system activity
+[2025-07-19 10:46:38] [Warning] === END CLAUDE ANALYSIS ===
+```
+
+### Disabling AI Analysis
+
+If you prefer to run the scripts without AI analysis:
+
+```powershell
+# Skip Claude analysis
+.\comprehensive_audit.ps1 -SkipClaudeAnalysis
 ```
 
 ## 📊 Sample Output (Redacted)
@@ -90,6 +150,19 @@ No RDP connections found.
 === SCAN COMPLETE ===
 ```
 
+## 📁 Logging and Output
+
+All scripts create daily rolling logs in the `logs/` subdirectory:
+- `quick_security_check_YYYY-MM-DD.log`
+- `comprehensive_audit_YYYY-MM-DD.log`
+
+Key features:
+- **Daily rotation**: New log file each day
+- **Timestamped entries**: All events logged with precise timestamps
+- **Severity levels**: Info, Warning, Error, Success, Alert
+- **Console + File output**: See results in real-time and review later
+- **Custom log directory**: Use `-LogDirectory` parameter
+
 ## 🛡️ Security Checks Performed
 
 ### 1. **Login Monitoring**
@@ -125,6 +198,51 @@ No RDP connections found.
 - PowerShell 5.1 or higher
 - Administrator privileges (for full audit capabilities)
 - Audit policies enabled for comprehensive logging
+- [Claude Code](https://claude.ai/code) (optional, for AI analysis)
+
+## 📝 Command Line Parameters
+
+### Quick Security Check
+```powershell
+.\quick_security_check.ps1 [-LogDirectory <string>] [-NoConsoleOutput] 
+                           [-ShowAllProcesses] [-ShowAllConnections]
+                           [-DaysBack <int>] [-SkipClaudeAnalysis] [-Help]
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-LogDirectory` | Custom log directory path | `logs` |
+| `-NoConsoleOutput` | Suppress console output (log only) | `$false` |
+| `-ShowAllProcesses` | Show all processes, not just suspicious | `$false` |
+| `-ShowAllConnections` | Show all connections, not just external | `$false` |
+| `-DaysBack` | Days to look back for scheduled tasks | `7` |
+| `-SkipClaudeAnalysis` | Skip AI analysis | `$false` |
+| `-Help` | Show detailed help | - |
+
+### Comprehensive Audit
+```powershell
+.\comprehensive_audit.ps1 [-LogDirectory <string>] [-NoConsoleOutput]
+                         [-FailedLoginHours <int>] [-NewUserDays <int>]
+                         [-ServiceDays <int>] [-ProcessHours <int>]
+                         [-RDPDays <int>] [-MaxEvents <int>]
+                         [-SkipPowerShell] [-ExportCSV]
+                         [-SkipClaudeAnalysis] [-Help]
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-LogDirectory` | Custom log directory path | `logs` |
+| `-NoConsoleOutput` | Suppress console output (log only) | `$false` |
+| `-FailedLoginHours` | Hours to check for failed logins | `24` |
+| `-NewUserDays` | Days to check for new users | `7` |
+| `-ServiceDays` | Days to check for new services | `7` |
+| `-ProcessHours` | Hours to check for suspicious processes | `24` |
+| `-RDPDays` | Days to check for RDP connections | `7` |
+| `-MaxEvents` | Max events per category (performance) | `1000` |
+| `-SkipPowerShell` | Skip PowerShell activity analysis | `$false` |
+| `-ExportCSV` | Export findings to CSV files | `$false` |
+| `-SkipClaudeAnalysis` | Skip AI analysis | `$false` |
+| `-Help` | Show detailed help | - |
 
 ## 🔧 Configuration
 
@@ -152,7 +270,13 @@ Feel free to submit issues and enhancement requests!
 
 ## 📜 License
 
-MIT License - See LICENSE file for details
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) - See LICENSE file for details
+
+This means:
+- ✅ **Free to use** for personal and non-commercial purposes
+- ✅ **Share and adapt** the code as needed
+- ❌ **No commercial use** without permission
+- 📝 **Attribution required** when sharing
 
 ## 🔒 Disclaimer
 
