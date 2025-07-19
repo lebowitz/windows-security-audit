@@ -10,3 +10,4 @@ Desktop.ini
 
 # PowerShell
 *.ps1xml
+.claude/settings.local.json
